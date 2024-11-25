@@ -20,7 +20,7 @@ export default function tradeToday(data) {
             bybitAveIV += (+bybitData['Calls'][i]['markIV'] + +bybitData['Puts'][i]['markIV']) / 6
         }
 
-        // if (prediction >= binanceAveIV * config['LONG']['predToIVOpenParam'] * Math.sqrt(1/365)) {
+        if (prediction >= binanceAveIV * config['LONG']['predToIVOpenParam'] * Math.sqrt(1/365)) {
 
             const expirationDate = new Date(binanceData['expirationDate']).getYear() % 100 + new Date(binanceData['expirationDate']).toISOString().split('-')[1] + String(new Date(binanceData['expirationDate'])).split(' ')[2]
 
@@ -29,15 +29,15 @@ export default function tradeToday(data) {
             longStraddle.startDeltaTracker()
 
             return longStraddle
-        // } 
-        // else if (prediction <= bybitAveIV * Math.sqrt(1/365)) {
-            // const expirationDate = bybitData['expirationDate']
+        } 
+        else if (prediction <= bybitAveIV * Math.sqrt(1/365)) {
+            const expirationDate = bybitData['expirationDate']
             const shortStraddle = new ShortBybit(prediction, expirationDate, timeNow, config['SHORT'], 'SHORT', 'Bybit', 'findShort')
 
             shortStraddle.findShort()
         
             return shortStraddle
-        // }
+        }
 
         console.log('Prediction: ' + prediction)
         console.log(`BinanceAveIV * ${config['LONG']['predToIVOpenParam']}: ` + binanceAveIV * config['LONG']['predToIVOpenParam'] * Math.sqrt(1/365))
