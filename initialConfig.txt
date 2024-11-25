@@ -1,0 +1,13 @@
+'LONG': {
+    'predToIVOpenParam': 1.3,
+    'deltaThreshold': 0.1,
+    'realzVolThreshold': 0.02,
+    'minAllowedSpentFromBalance': 0.1,
+    'trailingStopPercentage': 0.02,
+},
+'SHORT': {
+    'IVForClose': 0.5,
+    'minAllowedSpentFromBalance': 0.1,
+    'maxDeviation': 1.15,
+    'marginFactor': 1.3,
+}
