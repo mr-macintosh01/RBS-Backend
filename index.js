@@ -16,8 +16,8 @@ import { BalanceHistory } from './models/balanceHistoryModel.js'
 dotenv.config()
 
 const webSocketHub = new WebSocketHub(0, 0, 'analytics')
-webSocketHub.timeSocketSetUp()
-// webSocketHub.testStart()
+// webSocketHub.timeSocketSetUp()
+webSocketHub.testStart()
 
 const PORT = process.env.PORT ?? 3001
 

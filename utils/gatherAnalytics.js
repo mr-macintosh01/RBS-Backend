@@ -49,27 +49,27 @@ export default async function gatherAnalytics() {
 
     let binanceOpen = await getBinanceOptionsInfo(timeNow + 32 * 60 * 60 * 1000, timeNow)
 
-    let binanceClose = await getBinanceOptionsInfo(timeNow + 8 * 60 * 60 * 1000, yesterdayTime)
+    // let binanceClose = await getBinanceOptionsInfo(timeNow + 8 * 60 * 60 * 1000, yesterdayTime)
 
-    const newBinanceHistory = {
-        'open': binanceOpen,
-        'close': binanceClose
-    }
+    // const newBinanceHistory = {
+    //     'open': binanceOpen,
+    //     'close': binanceClose
+    // }
 
-    let binanceHistoryQuery = await BinanceOptionsHistory.create(newBinanceHistory)
-    console.log(binanceHistoryQuery)
+    // let binanceHistoryQuery = await BinanceOptionsHistory.create(newBinanceHistory)
+    // console.log(binanceHistoryQuery)
 
     let bybitOpen = await getBybitOptionsInfo(timeNow + 32 * 60 * 60 * 1000, timeNow)
     
-    let bybitClose = await getBybitOptionsInfo(timeNow + 8 * 60 * 60 * 1000, yesterdayTime)
+    // let bybitClose = await getBybitOptionsInfo(timeNow + 8 * 60 * 60 * 1000, yesterdayTime)
 
-    const newBybitHistory = {
-        'open': bybitOpen,
-        'close': bybitClose
-    }
+    // const newBybitHistory = {
+    //     'open': bybitOpen,
+    //     'close': bybitClose
+    // }
 
-    let bybitHistoryQuery = await BybitOptionsHistory.create(newBybitHistory)
-    console.log(bybitHistoryQuery)
+    // let bybitHistoryQuery = await BybitOptionsHistory.create(newBybitHistory)
+    // console.log(bybitHistoryQuery)
 
     return [prediction['prediction'], binanceOpen, bybitOpen, timeNow, analytics]
 }
