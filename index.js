@@ -125,6 +125,7 @@ app.get('/getData', async (req, res) => {
         },  
         'analytics': {
             'serverTime': webSocketHub.time,
+            'tradingRegime': webSocketHub.tradingRegime,
             'prediction': webSocketHub.prediction,
             'binanceOpen': webSocketHub.binanceOpen,
             'bybitOpen': webSocketHub.bybitOpen,
