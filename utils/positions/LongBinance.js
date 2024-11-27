@@ -211,7 +211,7 @@ export default class LongBinance extends Position {
                     this.lowerPrice = this.priceIndex
                 }
     
-                if (this.upperPrice - this.priceIndexOpen > this.oneStraddleSpentAmount && !trailingStopSide) {
+                if (this.upperPrice - this.priceIndexOpen > this.oneStraddleSpentAmount && !this.trailingStopSide) {
                     console.log('Set trailing stop UP!')
                     this.trailingStopSide = 'UP'
                     this.this.trailingStopPrice = this.priceIndex
