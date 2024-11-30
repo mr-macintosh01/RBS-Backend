@@ -12,12 +12,12 @@ import { DataVector } from './models/dataVectorModel.js'
 import { BinanceOptionsHistory } from './models/binanceOptionsHistoryModel.js'
 import { BybitOptionsHistory } from './models/bybitOptionsHistoryModel.js'
 import { BalanceHistory } from './models/balanceHistoryModel.js'
+import { PositionsHistory } from './models/positionsHistory.js'
 
 dotenv.config()
 
 const webSocketHub = new WebSocketHub(0, 0, 'analytics')
 webSocketHub.timeSocketSetUp()
-// webSocketHub.testStart()
 
 const PORT = process.env.PORT ?? 3001
 
@@ -25,13 +25,6 @@ const app = express()
 
 app.use(express.json())
 app.use(cors())
-// app.use(
-//     cors({
-//         origin: `http://localhost:${PORT}`,
-//         methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//         allowedHeaders: ['Content-Type'],
-//     })
-// )
 
 app.get('/', (req, res) => {
     console.log('Home')
@@ -250,12 +243,21 @@ app.post('/getAnalytics', async (req, res) => {
             req.body['balanceHistoryQuery']['sort']
         )
 
+        const positionsHistory = await PositionsHistory.find(
+            req.body['positionsHistoryQuery']['find'],
+            req.body['positionsHistoryQuery']['projection']
+        )
+        .sort(
+            req.body['positionsHistoryQuery']['sort']
+        )
+
         const obj = {
             'predictions': predictions,
             'dataVector': dataVector,
             'binanceOptionsHistory': binanceOptionsHistory,
             'bybitOptionsHistory': bybitOptionsHistory,
-            'balanceHistory': balanceHistory
+            'balanceHistory': balanceHistory,
+            'positionsHistory': positionsHistory
         }
 
         res.status(200).send(obj)
@@ -264,10 +266,6 @@ app.post('/getAnalytics', async (req, res) => {
         res.status(500).send({message: err.message})
     }
 })
-
-// app.listen(PORT, () => {
-//     console.log(`App is listening on port ${PORT}`)
-// })
 
 mongoose
     .connect(process.env.mongoDBURL)
