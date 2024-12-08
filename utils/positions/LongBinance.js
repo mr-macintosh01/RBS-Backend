@@ -32,7 +32,6 @@ export default class LongBinance extends Position {
         }
         
         this.optionDeltaTracker.onmessage = (event) => {
-            // console.log('Received message Binance Options DeltaTracker: ');
             const res = JSON.parse(event.data)
             
             let calls = []
@@ -100,12 +99,14 @@ export default class LongBinance extends Position {
         if (!allowedPositionAmount) {
             console.log('Min position cost for Binance LONG exceeds MarginBalance allowed value!')
             this.status = 'PositionError'
+            this.regime = 'neutral'
             return false
         }
         
         if (vol > this.config['realzVolThreshold'] || vol == 0) {
             console.log('Too Hight Realized Volatility For Today or error encountered during volatility fetcing')
             this.status = 'PositionError'
+            this.regime = 'neutral'
 
             return false
         } else {
@@ -133,8 +134,7 @@ export default class LongBinance extends Position {
     
             this.upperPrice = this.priceIndexOpen
             this.lowerPrice = this.priceIndexOpen
-    
-    
+
             this.startPositionTracker()
         }
     }
@@ -211,7 +211,7 @@ export default class LongBinance extends Position {
                     this.lowerPrice = this.priceIndex
                 }
     
-                if (this.upperPrice - this.priceIndexOpen > this.oneStraddleSpentAmount && !this.trailingStopSide) {
+                if (this.upperPrice - this.priceIndexOpen > this.oneStraddleSpentAmount && !trailingStopSide) {
                     console.log('Set trailing stop UP!')
                     this.trailingStopSide = 'UP'
                     this.this.trailingStopPrice = this.priceIndex
@@ -234,13 +234,13 @@ export default class LongBinance extends Position {
                     this.makeMarketClose('trailingStopTouch')
                 }
     
-                console.log(this.upperPrice)
-                console.log(this.priceIndex)
-                console.log(this.lowerPrice)
-                console.log(this.trailingStopSide)
-                console.log(this.trailingStopPrice)
-                console.log(this.trailingStopPercentage)
-                console.log('Trigger price: ' + (this.trailingStopPrice * this.trailingStopPercentage))    
+                // console.log(this.upperPrice)
+                // console.log(this.priceIndex)
+                // console.log(this.lowerPrice)
+                // console.log(this.trailingStopSide)
+                // console.log(this.trailingStopPrice)
+                // console.log(this.trailingStopPercentage)
+                // console.log('Trigger price: ' + (this.trailingStopPrice * this.trailingStopPercentage))    
             }
         }
 
@@ -355,9 +355,38 @@ export default class LongBinance extends Position {
     }
 
     async getMarketInfo(contract) {
-        const marketInfo = await fetch(this.url + '/eapi/v1/mark?' + new URLSearchParams({'symbol': contract}))
-        const marketInfoJson = await marketInfo.json()
+        let marketInfo, marketInfoJson
+        let counter = 0
 
+        while (true) {
+            try {
+                marketInfo = await fetch(this.url + '/eapi/v1/mark?' + new URLSearchParams({'symbol': contract}))
+                marketInfoJson = await marketInfo.json()
+                
+                if (marketInfoJson[0]['symbol']) {
+                    break
+                }
+
+                if (counter >= 10) {
+                    console.log('Maximum amount of retries to get the Long Binance Info is reached and the marketInfoJson object is empty!')
+                    marketInfoJson = [{}]
+                    break
+                }
+                
+                counter++
+            } catch (err) {
+                console.log('Error during getting Binance Long Market Info!')
+                console.log(err)
+                if (counter >= 10) {
+                    console.log('Maximum amount of retries to get the Long Binance Info is reached due to error!')
+                    marketInfoJson = [{}]
+                    break
+                }
+
+                counter++
+            }
+        }
+        
         const compressedMarketInfo = {
             's': marketInfoJson[0]['symbol'],
             'b': marketInfoJson[0]['bidIV'],
@@ -376,7 +405,7 @@ export default class LongBinance extends Position {
 
     async calculateAllowedPositionAmount(symbols) {
         const marginBalance = +await this.getAccountBalance() 
-        const margingBalanceThreshold = 0.9
+        const marginBalanceThreshold = 0.9
         
         const bestPrices = []
         for (let i = 0; i < 2; i++) {
@@ -394,7 +423,7 @@ export default class LongBinance extends Position {
     
         const minPositionCost = bestPrices[0] * minContractSize + (Math.min(0.0003 * indexPrice, 0.1 * bestPrices[0]) * minContractSize) + bestPrices[1] * minContractSize + (Math.min(0.0003 * indexPrice, 0.1 * bestPrices[1]) * minContractSize) 
     
-        if (minPositionCost >= marginBalance * margingBalanceThreshold) {
+        if (minPositionCost >= marginBalance * marginBalanceThreshold) {
             return false
         } else if (minPositionCost >= this.config['minAllowedSpentFromBalance'] * marginBalance) {
             return minContractSize

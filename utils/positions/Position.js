@@ -47,7 +47,7 @@ export default class Position {
             'platform': this.platform,
             'closeReason': reason,
             'openTime': `${new Date(this.openPositions[0]['createTime']).toISOString()}/${new Date(this.openPositions[1]['createTime']).toISOString()}`,
-            'closeTime': `${new Date(this.closePositions[0]['createTime']).toISOString()}/${new Date(this.closePositions[1]['createTime']).toISOString()}`,
+            'closeTime': `${new Date(this.closePositions[0]['createTime'] || 0).toISOString()}/${new Date(this.closePositions[1]['createTime'] || 0).toISOString()}`,
             'predictedVol': this.prediction,
             'realizedVolForPosition': (this.upperPrice - this.lowerPrice)/this.priceIndexOpen,
             'atOpenRealizedVol': this.type === 'SHORT' ? '' : this.atOpenRealizedVol,
@@ -78,7 +78,7 @@ export default class Position {
                 'callTheta': this.openPositionMarketConditions[0]['t'],
                 'callGamma': this.openPositionMarketConditions[0]['g'],
                 'callVega': this.openPositionMarketConditions[0]['v'],
-                'callCreationTime': new Date(this.openPositions[0]['createTime']).toISOString(),
+                'callCreationTime': new Date(this.openPositions[0]['createTime'] || 0).toISOString(),
                 'putSymbol': this.openPositionMarketConditions[1]['s'],
                 'putBidIV': this.openPositionMarketConditions[1]['b'],
                 'putAskIV': this.openPositionMarketConditions[1]['a'],
@@ -96,7 +96,7 @@ export default class Position {
                 'putTheta': this.openPositionMarketConditions[1]['t'],
                 'putGamma': this.openPositionMarketConditions[1]['g'],
                 'putVega': this.openPositionMarketConditions[1]['v'],
-                'putCreationTime': new Date(this.openPositions[1]['createTime']).toISOString()
+                'putCreationTime': new Date(this.openPositions[1]['createTime'] || 0).toISOString()
             },
             'metadataClose': {
                 'callSymbol': this.closePositionMarketConditions[0]['s'],
@@ -116,7 +116,7 @@ export default class Position {
                 'callTheta': this.closePositionMarketConditions[0]['t'],
                 'callGamma': this.closePositionMarketConditions[0]['g'],
                 'callVega': this.closePositionMarketConditions[0]['v'],
-                'callCreationTime': new Date(this.closePositions[0]['createTime']).toISOString(),
+                'callCreationTime': new Date(this.closePositions[0]['createTime'] || 0).toISOString(),
                 'putSymbol': this.closePositionMarketConditions[1]['s'],
                 'putBidIV': this.closePositionMarketConditions[1]['b'],
                 'putAskIV': this.closePositionMarketConditions[1]['a'],
@@ -134,7 +134,7 @@ export default class Position {
                 'putTheta': this.closePositionMarketConditions[1]['t'],
                 'putGamma': this.closePositionMarketConditions[1]['g'],
                 'putVega': this.closePositionMarketConditions[1]['v'],
-                'putCreationTime': new Date(this.closePositions[1]['createTime']).toISOString()
+                'putCreationTime': new Date(this.closePositions[1]['createTime'] || 0).toISOString()
             },
             'config': this.config
         }

@@ -10,7 +10,7 @@ export default function tradeToday(data) {
         
         shortStraddle.findShort()
         
-        return shortStraddle
+        return [shortStraddle, true]
     } else {
         let binanceAveIV = 0
         let bybitAveIV = 0
@@ -28,7 +28,7 @@ export default function tradeToday(data) {
 
             longStraddle.startDeltaTracker()
 
-            return longStraddle
+            return [longStraddle, true]
         } 
         else if (prediction <= bybitAveIV * Math.sqrt(1/365)) {
             const expirationDate = bybitData['expirationDate']
@@ -36,7 +36,7 @@ export default function tradeToday(data) {
 
             shortStraddle.findShort()
         
-            return shortStraddle
+            return [shortStraddle, true]
         }
 
         console.log('Prediction: ' + prediction)
@@ -44,6 +44,6 @@ export default function tradeToday(data) {
         console.log(`BybitAveIV: ` + bybitAveIV * Math.sqrt(1/365))
         console.log('No positions')
         
-        return []
+        return [[], false]
     }
 }

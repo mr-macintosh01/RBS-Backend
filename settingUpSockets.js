@@ -38,32 +38,9 @@ export default class WebSocketHub {
         this.dataVector = {
             vector: []
         }
-    }
 
-    priceSocketSetUp() {
-        this.priceSocket = new ws('wss://stream.binance.com:9443/ws/btcusdt@trade')
-
-        this.priceSocket.onopen = () => {
-            console.log('WebSocket price connection is established')
-
-        }
-        
-        this.priceSocket.onmessage = (event) => {
-            this.price = JSON.parse(event.data).p
-        }
-    
-        this.priceSocket.onerror = (error) => {
-            console.error('WebSocket price connection error:', error);        
-            this.priceSocket.close()
-        };
-            
-        this.priceSocket.onclose = () => {
-            console.log('WebSocket price connection is closed.');
-            
-            setTimeout(() => {
-                this.priceSocketSetUp()	
-            }, 10)
-        };
+        this.fatalErrorInAnalytics = false
+        this.decisionToTrade = false
     }
 
     async testStart() {
@@ -73,6 +50,7 @@ export default class WebSocketHub {
         // console.log('server time reason: ' + new Date(response.result.serverTime).toISOString())
         
         this.saveBalance()
+        this.decisionToTrade = false
 
         const analytics = await gatherAnalytics()
 
@@ -81,6 +59,7 @@ export default class WebSocketHub {
         this.bybitOpen = analytics[2]
         this.openTime = analytics[3]
         this.dataVector = analytics[4]
+        this.fatalErrorInAnalytics = analytics[5]
 
         const config = (await Config.find({}))[0]
 
@@ -91,7 +70,10 @@ export default class WebSocketHub {
                 }    
             }
                 
-            this.position = tradeToday([this.prediction, this.binanceOpen, this.bybitOpen, this.openTime, config])
+            const [p, d] = tradeToday([this.prediction, this.binanceOpen, this.bybitOpen, this.openTime, config])
+
+            this.position = p
+            this.decisionToTrade = d
 
         } else if (this.getTradingRegime() === 'softStop') {
             if (this.position.status === 'Open') {
@@ -122,13 +104,17 @@ export default class WebSocketHub {
         this.timeSocket.onmessage = async (event) => {
             const response = JSON.parse(event.data);
 
-            // console.log(response.result.serverTime)
             if (response.result.serverTime) {
-            //     console.log('Server: '  + response.result.serverTime % (24 * 60 * 60 * 1000))
-            //     console.log('time: ' + this.time  % (24 * 60 * 60 * 1000))
-            //     console.log(response.result.serverTime % (24 * 60 * 60 * 1000) < this.time  % (24 * 60 * 60 * 1000))
                 if (response.result.serverTime % (24 * 60 * 60 * 1000) < this.time  % (24 * 60 * 60 * 1000)) {
+                    console.log('Value server: ' + response.result.serverTime)
+                    console.log('Value time: ' + this.time)
+                    console.log('Server: '  + response.result.serverTime % (24 * 60 * 60 * 1000))
+                    console.log('time: ' + this.time  % (24 * 60 * 60 * 1000))
+                    console.log(response.result.serverTime % (24 * 60 * 60 * 1000) < this.time  % (24 * 60 * 60 * 1000))    
+
                     this.time = response.result.serverTime
+                    this.decisionToTrade = 'None'
+
                     console.log('New day')
                     console.log('server time reason: ' + new Date(response.result.serverTime).toISOString())
                     
@@ -149,11 +135,16 @@ export default class WebSocketHub {
                     this.bybitOpen = analytics[2]
                     this.openTime = analytics[3]
                     this.dataVector = analytics[4]
-            
+                    this.fatalErrorInAnalytics = analytics[5]
+
                     const config = (await Config.find({}))[0]
     
-                    if (this.getTradingRegime() === 'start') {
-                        this.position = tradeToday([this.prediction, this.binanceOpen, this.bybitOpen, this.openTime, config])
+                    if (this.getTradingRegime() === 'start' && !this.fatalErrorInAnalytics) {
+                        const [p, d] = tradeToday([this.prediction, this.binanceOpen, this.bybitOpen, this.openTime, config])
+
+                        this.position = p
+                        this.decisionToTrade = d
+                    
                     } else if (this.getTradingRegime() === 'softStop') {
                         this.setTradingRegime('analytics')
                     }
@@ -282,6 +273,7 @@ export default class WebSocketHub {
         .update(query_string)
         .digest('hex');
     }
+    
     // startBybitBalanceTracker() {
     //     const demoEndpoint = 'wss://stream-demo.bybit.com/v5/private'
         
