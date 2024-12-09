@@ -26,7 +26,7 @@ app.use(express.json())
 
 app.use(
     cors({
-        origin: `${process.env.REACT_APP_FRONT_URL}`,
+        origin: [`${process.env.REACT_APP_FRONT_URL}`],
         methods: ['GET', 'POST', 'PUT', 'DELETE'],
         exposedHeaders: 'verificationStatus',
         allowedHeaders: ['Content-Type', 'passwordhash'],
