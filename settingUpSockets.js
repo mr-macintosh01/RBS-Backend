@@ -17,7 +17,8 @@ export default class WebSocketHub {
 
         this.price = price
         this.time = time
-        
+        this.date = Math.floor(new Date().getTime() / (1000 * 60 * 60 * 24))
+
         this.tradingRegime = tradingRegime
 
         this.binanceBalanceSocket = 0
@@ -86,6 +87,7 @@ export default class WebSocketHub {
 
     timeSocketSetUp() {
         let timeIntervalSending
+        
         this.timeSocket = new ws('wss://ws-api.binance.com:443/ws-api/v3')
         
         this.timeSocket.onopen = () => {
@@ -105,12 +107,11 @@ export default class WebSocketHub {
             const response = JSON.parse(event.data);
 
             if (response.result.serverTime) {
-                if (response.result.serverTime % (24 * 60 * 60 * 1000) < this.time  % (24 * 60 * 60 * 1000)) {
-                    console.log('Value server: ' + response.result.serverTime)
-                    console.log('Value time: ' + this.time)
-                    console.log('Server: '  + response.result.serverTime % (24 * 60 * 60 * 1000))
-                    console.log('time: ' + this.time  % (24 * 60 * 60 * 1000))
-                    console.log(response.result.serverTime % (24 * 60 * 60 * 1000) < this.time  % (24 * 60 * 60 * 1000))    
+                if (Math.floor(response.result.serverTime / (1000 * 60 * 60 * 24)) > this.date) {
+                    console.log('Value server: ' + Math.floor(response.result.serverTime / (1000 * 60 * 60 * 24)))
+                    console.log('Value date: ' + this.date)
+
+                    this.date = Math.floor(response.result.serverTime / (1000 * 60 * 60 * 24))
 
                     this.time = response.result.serverTime
                     this.decisionToTrade = 'None'
